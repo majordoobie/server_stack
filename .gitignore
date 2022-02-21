@@ -1,5 +1,6 @@
 .env
 .vscode/
+.DS_store
 secrets/
 shared/
 pem_folder/
