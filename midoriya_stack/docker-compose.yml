@@ -1,0 +1,89 @@
+version: "3.9"
+
+networks:
+  # Net work was set up with docker network create --gateway 192.168.90.1 --subnet 192.168.90.0/24 pocket_dimension
+  pocket_dimension:
+    name: pocket_dimension
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.90.0/24
+  default:
+    driver: bridge
+
+
+services:
+  # # Database 
+  # panther_db:
+  #   image: postgres
+  #   container_name: something
+  #   env_file:
+  #     - packages/private/PantherLily_Keys/database_docker_compose.env
+  #   volumes:
+  #     - panther_volume:/var/lib/postgresql/data/  # Path is where the container stores sql data
+  #   ports:
+  #     - 5432:5432
+  #   networks:
+  #     - panther_network
+      
+  # Reverse proxy 
+  traefik:
+    container_name: traefik
+    image: traefik:2.2.1 # the chevrotin tag refers to v2.2.x but introduced a breaking change in 2.2.2
+    restart: unless-stopped
+
+    networks:
+      pocket_dimension:
+        ipv4_address: 192.168.90.10 # Static IP for traeffik
+
+    security_opt:
+        # Prevents processes from elivating 
+      - no-new-privileges:true
+
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+
+    volumes:
+      - $DOCKERDIR/traefik2/rules:/rules 
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - $DOCKERDIR/traefik2/acme/acme.json:/acme.json 
+      - $DOCKERDIR/traefik2/logs/traefik.log:/traefik.log 
+      - $DOCKERDIR/traefik2/logs/access.log:/access.log 
+      - $DOCKERDIR/traefik2/traefik.yml:/traefik.yml:ro
+      - $DOCKERDIR/shared:/shared
+
+
+    environment:
+      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
+      - CF_API_KEY=$CLOUDFLARE_API_KEY
+
+    labels:
+      - "traefik.enable=true"
+      # HTTP-to-HTTPS Redirect
+      - "traefik.http.routers.http-catchall.entrypoints=http"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # HTTP Routers
+      - "traefik.http.routers.traefik-rtr.entrypoints=https"
+      - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.$DOMAINNAME`)"
+      - "traefik.http.routers.traefik-rtr.tls=true"
+      # Comment out this line after first run of traefik to force the use of wildcard certs
+      # - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare" 
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].main=$DOMAINNAME"
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.$DOMAINNAME"
+      ## Services - API
+      - "traefik.http.routers.traefik-rtr.service=api@internal"
+      # Middlewares
+      - "traefik.http.routers.traefik-rtr.middlewares=chain-basic-auth@file" 

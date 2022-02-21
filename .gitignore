@@ -1,0 +1,7 @@
+.env
+.vscode/
+secrets/
+shared/
+pem_folder/
+acme/
+logs/
