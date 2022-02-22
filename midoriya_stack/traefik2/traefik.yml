@@ -56,9 +56,9 @@ accessLog:
 providers:
   docker:
     endpoint: unix:///var/run/docker.sock
-    defaultRule: Host(`{{ index .Labels "com.docker.compose.service" }}.$DOMAINNAME`)
+    defaultRule: Host(`{{ index .Labels "com.docker.compose.service" }}.{{env "DOMAINNAME"}}`)
     exposedByDefault: false # Prevents auto discovery of containers
-    network: $NETWORK
+    network: warp_gate
     swarmMode: false
   # Allows loading of dynamic rules
   file:
@@ -69,7 +69,7 @@ providers:
 certificatesResolvers:
   dns-cloudflare:
     acme:
-      email: $CLOUDFLARE_EMAIL
+      email: $CF_API_EMAIL
       storage: /acme.json
       dnsChallenge:
         provider: cloudflare
