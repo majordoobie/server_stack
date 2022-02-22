@@ -6,3 +6,4 @@ shared/
 pem_folder/
 acme/
 logs/
+.idea
