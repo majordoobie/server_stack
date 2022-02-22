@@ -1,9 +1,17 @@
 version: "3.9"
 
+secrets:
+  cloudflare_email:
+    file: $SECRETSDIR/cloudflare_email
+  cloudflare_api_key:
+    file: $SECRETSDIR/cloudflare_api_key
+
+
 networks:
-  # Net work was set up with docker network create --gateway 192.168.90.1 --subnet 192.168.90.0/24 pocket_dimension
-  pocket_dimension:
-    name: pocket_dimension
+  # Net work was set up with: 
+  # docker network create --gateway 192.168.90.1 --subnet 192.168.90.0/24 warp_gate
+  warp_gate:
+    name: warp_gate
     driver: bridge
     ipam:
       config:
@@ -14,17 +22,16 @@ networks:
 
 services:
   # # Database 
-  # panther_db:
+  # midoriya_db:
   #   image: postgres
-  #   container_name: something
-  #   env_file:
-  #     - packages/private/PantherLily_Keys/database_docker_compose.env
+  #   restart: unless-stopped
+  #   container_name: midoriya_db
   #   volumes:
   #     - panther_volume:/var/lib/postgresql/data/  # Path is where the container stores sql data
   #   ports:
   #     - 5432:5432
   #   networks:
-  #     - panther_network
+  #     - warp_gate
       
   # Reverse proxy 
   traefik:
@@ -33,7 +40,7 @@ services:
     restart: unless-stopped
 
     networks:
-      pocket_dimension:
+      warp_gate:
         ipv4_address: 192.168.90.10 # Static IP for traeffik
 
     security_opt:
@@ -61,12 +68,14 @@ services:
       - $DOCKERDIR/traefik2/logs/traefik.log:/traefik.log 
       - $DOCKERDIR/traefik2/logs/access.log:/access.log 
       - $DOCKERDIR/traefik2/traefik.yml:/traefik.yml:ro
-      - $DOCKERDIR/shared:/shared
-
+      - $SECRETSDIR/htpasswd:/run/secrets/htpasswd
 
     environment:
-      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
-      - CF_API_KEY=$CLOUDFLARE_API_KEY
+      - CF_API_EMAIL=/run/secrets/cloudflare_email
+      - CF_API_KEY=/run/secrets/cloudflare_api_key
+
+    # secrets:
+    #   - cloudflare_api_key
 
     labels:
       - "traefik.enable=true"

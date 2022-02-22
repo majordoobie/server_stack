@@ -2,7 +2,7 @@
   [http.middlewares.middlewares-basic-auth]
     [http.middlewares.middlewares-basic-auth.basicAuth]
       realm = "Traefik2 Basic Auth"
-      usersFile = "/shared/.htpasswd" #be sure to mount the volume through docker-compose.yml
+      usersFile = "/run/secrets/htpasswd" #be sure to mount the volume through docker-compose.yml
 
   [http.middlewares.middlewares-rate-limit]
     [http.middlewares.middlewares-rate-limit.rateLimit]
