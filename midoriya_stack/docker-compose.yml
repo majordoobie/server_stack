@@ -35,27 +35,27 @@ volumes:
 
 
 services:
-  # # Database 
-  # midoriya_db:
-  #   image: postgres
-  #   restart: unless-stopped
-  #   container_name: midoriya_db
-  #   volumes:
-  #     - midoriya_db_volume:/var/lib/postgresql/data/
-  #   ports:
-  #     - 5432:5432
-  #   networks:
-  #     - warp_gate
+  # Database 
+  midoriya_db:
+    image: postgres
+    restart: unless-stopped
+    container_name: midoriya_db
+    volumes:
+      - midoriya_db_volume:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    networks:
+      - warp_gate
 
-  #   environment:
-  #     - POSTGRES_PASSWORD=/run/secrets/pg_password
-  #     - POSTGRES_USER=/run/secrets/pg_user
-  #     - POSTGRES_DB=/run/secrets/pg_database
+    environment:
+      - POSTGRES_PASSWORD=/run/secrets/pg_password
+      - POSTGRES_USER=/run/secrets/pg_user
+      - POSTGRES_DB=/run/secrets/pg_database
 
-  #   secrets:
-  #     - pg_password
-  #     - pg_user
-  #     - pg_database
+    secrets:
+      - pg_password
+      - pg_user
+      - pg_database
       
   # Reverse proxy 
   traefik:
