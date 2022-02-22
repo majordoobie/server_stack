@@ -43,7 +43,7 @@ services:
     volumes:
       - midoriya_db_volume:/var/lib/postgresql/data/
     ports:
-      - 5432:5432
+      - "5432:5432"
     networks:
       - warp_gate
 
@@ -142,7 +142,7 @@ services:
     environment:
       - CF_API_EMAIL_FILE=/run/secrets/cloudflare_email
       - CF_API_KEY_FILE=/run/secrets/cloudflare_api_key
-      - UNUSED_VAR=/run/secrets/htpasswd # Var not used, file gets used from the middlewear
+      - UNUSED_VAR=/run/secrets/htpasswd # Var not used, file gets used from the middleware
 
     secrets:
       - cloudflare_email
