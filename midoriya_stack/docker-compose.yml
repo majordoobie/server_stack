@@ -7,6 +7,13 @@ secrets:
     file: $SECRETSDIR/cloudflare_api_key
   htpasswd:
     file: $SECRETSDIR/htpasswd
+  pg_password:
+    file: $SECRETSDIR/pg_password
+  pg_user:
+    file: $SECRETSDIR/pg_user
+  pg_database:
+    file: $SECRETSDIR/pg_database
+  
 
 
 networks:
@@ -21,6 +28,11 @@ networks:
   default:
     driver: bridge
 
+volumes:
+  midoriya_db_volume:
+    external: true
+    name: midoriya_db_volume
+
 
 services:
   # # Database 
@@ -29,11 +41,21 @@ services:
   #   restart: unless-stopped
   #   container_name: midoriya_db
   #   volumes:
-  #     - panther_volume:/var/lib/postgresql/data/  # Path is where the container stores sql data
+  #     - midoriya_db_volume:/var/lib/postgresql/data/
   #   ports:
   #     - 5432:5432
   #   networks:
   #     - warp_gate
+
+  #   environment:
+  #     - POSTGRES_PASSWORD=/run/secrets/pg_password
+  #     - POSTGRES_USER=/run/secrets/pg_user
+  #     - POSTGRES_DB=/run/secrets/pg_database
+
+  #   secrets:
+  #     - pg_password
+  #     - pg_user
+  #     - pg_database
       
   # Reverse proxy 
   traefik:
@@ -63,7 +85,7 @@ services:
       # Enable logging to see what is going on
       - --log=true
       - --log.level=DEBUG # (Default: error) 
-      - --log.filePath=/traefil.log
+      - --log.filePath=/traefik.log
       - --log.format=common
       - --accessLog=true
       - --accessLog.filePath=/access.log
@@ -115,12 +137,12 @@ services:
       - $DOCKERDIR/traefik2/acme/acme.json:/acme.json 
       - $DOCKERDIR/traefik2/logs/traefik.log:/traefik.log 
       - $DOCKERDIR/traefik2/logs/access.log:/access.log 
-      - $DOCKERDIR/traefik2/traefik.yml:/traefik.yml:ro
+      # - $DOCKERDIR/traefik2/traefik.yml:/traefik.yml:ro
 
     environment:
       - CF_API_EMAIL_FILE=/run/secrets/cloudflare_email
       - CF_API_KEY_FILE=/run/secrets/cloudflare_api_key
-      - HTPASSWD_FILE=/run/secrets/htpasswd # HTPASSWD_FILE can be whatever as it is not used/called anywhere.
+      - UNUSED_VAR=/run/secrets/htpasswd # Var not used, file gets used from the middlewear
 
     secrets:
       - cloudflare_email
