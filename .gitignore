@@ -7,3 +7,4 @@ pem_folder/
 acme/
 logs/
 .idea
+users_database.yml

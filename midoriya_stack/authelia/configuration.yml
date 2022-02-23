@@ -5,26 +5,14 @@
 host: 0.0.0.0
 port: 9091
 log_level: debug
+theme: dark
 
-# This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE
-# I used this site to generate the secret: https://www.grc.com/passwords.htm
-# jwt_secret: SECRET_GOES_HERE # use docker secret file instead AUTHELIA_JWT_SECRET_FILE
-
-# https://docs.authelia.com/configuration/miscellaneous.html#default-redirection-url
 default_redirection_url: https://authelia.majordoob.com
 
 totp:
   issuer: authelia.com
   period: 30
   skew: 1
-
-# Enable the following for Duo Push Notification support
-# https://www.authelia.com/docs/features/2fa/push-notifications.html
-#duo_api:
-#  hostname: api-123456789.example.com
-#  integration_key: ABCDEF
-#  # This secret can also be set using the env variables AUTHELIA_DUO_API_SECRET_KEY_FILE
-#  secret_key: # use docker secret file instead AUTHELIA_DUO_API_SECRET_KEY_FILE
 
 authentication_backend:
   file:
@@ -35,7 +23,7 @@ authentication_backend:
       iterations: 1
       salt_length: 16
       parallelism: 8
-      memory: 1024 # blocks this much of the RAM. Tune this.
+      memory: 1024
 
 # https://docs.authelia.com/configuration/access-control.html
 access_control:
@@ -56,17 +44,21 @@ session:
   # secret: SECRET_GOES_HERE # use docker secret file instead AUTHELIA_SESSION_SECRET_FILE
   expiration: 3600 # 1 hour
   inactivity: 300 # 5 minutes
-  domain: majordoob.com # Should match whatever your root protected domain is
+  domain: majordoob.com
 
 regulation:
   max_retries: 3
-  find_time: 120
-  ban_time: 300
+  find_time: 120 # search within the last 2 minutes the user tried to log in
+  ban_time: 300  # Ban for five minutes
 
 storage:
-For local storage, uncomment lines below and comment out mysql. https://docs.authelia.com/configuration/storage/sqlite.html
- local:
-   path: /config/authelia_db.sqlite3
+  # https://www.authelia.com/docs/configuration/storage/postgres.html
+  postgres:
+    host: midoriya_db
+    port: 5432
+    database: midoriya_db
+    schema: public
+    username: megatron
 
 notifier:
   # smtp:
@@ -76,6 +68,7 @@ notifier:
   #   host: SMTP_HOST
   #   port: 587 #465
   #   sender: SENDER_EMAIL
-  For testing purpose, notifications can be sent in a file. Be sure map the volume in docker-compose.
+
+  # Delete this when you are done testing
  filesystem:
    filename: /tmp/authelia/notification.txt

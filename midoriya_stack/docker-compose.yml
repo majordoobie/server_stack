@@ -1,19 +1,33 @@
 version: "3.9"
 
 secrets:
+  # DNS
   cloudflare_email:
     file: $SECRETSDIR/cloudflare_email
   cloudflare_api_key:
     file: $SECRETSDIR/cloudflare_api_key
   htpasswd:
     file: $SECRETSDIR/htpasswd
+
+  # Database
   pg_password:
     file: $SECRETSDIR/pg_password
   pg_user:
     file: $SECRETSDIR/pg_user
   pg_database:
     file: $SECRETSDIR/pg_database
-  
+
+  # Authelia
+  authelia_jwt_secret:
+    file: $SECRETSDIR/authelia_jwt_secret
+  authelia_session_secret:
+    file: $SECRETSDIR/authelia_session_secret
+  authelia_storage_pg_password:
+    file: $SECRETSDIR/authelia_db_password
+#  authelia_notifier_smtp_password:
+#    file: $SECRETSDIR/authelia_notifier_smtp_password
+#  authelia_duo_api_secret_key:
+#    file: $SECRETSDIR/authelia_duo_api_secret_key
 
 
 networks:
@@ -137,7 +151,6 @@ services:
       - $DOCKERDIR/traefik2/acme/acme.json:/acme.json 
       - $DOCKERDIR/traefik2/logs/traefik.log:/traefik.log 
       - $DOCKERDIR/traefik2/logs/access.log:/access.log 
-      # - $DOCKERDIR/traefik2/traefik.yml:/traefik.yml:ro
 
     environment:
       - CF_API_EMAIL_FILE=/run/secrets/cloudflare_email
@@ -168,3 +181,43 @@ services:
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       # Middlewares
       - "traefik.http.routers.traefik-rtr.middlewares=chain-basic-auth@file" 
+
+  authelia:
+    container_name: authelia
+    image: authelia/authelia
+    restart: unless-stopped
+    networks:
+      warp_gate:
+        ipv4_address: 192.168.90.11 # Static IP for traeffik
+
+    # Do not add this; Recreating will destroy the database; just git good
+#    depends_on:
+#      - midoriya_db
+    volumes:
+      - $DOCKERDIR/authelia:/config # Passing the directory, Authelia knows what files to look for
+
+    environment:
+      - TZ=$TZ
+      - AUTHELIA_JWT_SECRET_FILE=/run/secrets/authelia_jwt_secret
+      - AUTHELIA_SESSION_SECRET_FILE=/run/secrets/authelia_session_secret
+      - AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE=/run/secrets/authelia_db_password
+#      - AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE=/run/secrets/authelia_notifier_smtp_password
+#      - AUTHELIA_DUO_API_SECRET_KEY_FILE=/run/secrets/authelia_duo_api_secret_key
+
+    secrets:
+      - authelia_jwt_secret
+      - authelia_session_secret
+      - authelia_storage_pg_password
+#      - authelia_notifier_smtp_password
+#      - authelia_duo_api_secret_key
+
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.authelia-rtr.entrypoints=https"
+      - "traefik.http.routers.authelia-rtr.rule=HostHeader(`authelia.$DOMAINNAME`)"
+      ## Middlewares
+      - "traefik.http.routers.authelia-rtr.middlewares=chain-authelia@file"
+      ## HTTP Services
+      - "traefik.http.routers.authelia-rtr.service=authelia-svc"
+      - "traefik.http.services.authelia-svc.loadbalancer.server.port=9091"

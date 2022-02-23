@@ -33,3 +33,12 @@
       [http.middlewares.middlewares-secure-headers.headers.customResponseHeaders]
         X-Robots-Tag = "none,noarchive,nosnippet,notranslate,noimageindex,"
         server = ""
+
+
+    middlewares-authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd=https://authelia.example.com"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
