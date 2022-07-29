@@ -14,7 +14,7 @@
 #   user@password 
 
 # Provide x86 emulation (Disables ptrace)
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM --platform=linux/amd64 ubuntu:22.04
 #FROM ubuntu:20.04
 
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get -y install tzdata
@@ -32,7 +32,7 @@ RUN apt-get update \
       automake \
       rsync \
       tar \
-      python \
+      python3-pip \
       valgrind \
       iproute2 \ 
       neovim \

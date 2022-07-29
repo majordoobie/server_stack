@@ -17,20 +17,10 @@ services:
     dns:
       - 1.1.1.1
       - 1.0.0.1
-    networks:
-      warp_gate:
-        ipv4_address: 192.168.2.5 # Static IP
 
+    ports:
+      - "9999:22"
 
-networks:
-  warp_gate:
-    name: warp_gate
-    driver: bridge
-    ipam:
-      config: 
-        - subnet: 192.168.2.0/24
-  default:
-    driver: bridge
 
 
 
