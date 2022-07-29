@@ -1,0 +1,36 @@
+version: '3.7'
+services:
+  python_x86_dev:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: python_dev.dockerfile
+    image: python_x86_dev:v1.0
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+
+    container_name: python_x86_dev
+    volumes:
+      - .:/opt/code
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    networks:
+      warp_gate:
+        ipv4_address: 192.168.2.5 # Static IP
+
+
+networks:
+  warp_gate:
+    name: warp_gate
+    driver: bridge
+    ipam:
+      config: 
+        - subnet: 192.168.2.0/24
+  default:
+    driver: bridge
+
+
+
