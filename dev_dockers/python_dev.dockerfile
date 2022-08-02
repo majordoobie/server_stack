@@ -15,24 +15,30 @@
 
 # Provide x86 emulation (Disables ptrace making gdb useless)
 FROM --platform=linux/amd64 ubuntu:22.04
-#FROM ubuntu:20.04
 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get -y install tzdata
+# Uncommet here to get the native version of ubuntu
+#FROM ubuntu:22.04
+
+RUN DEBIAN_FRONTEND="noninteractive" \
+    apt-get update && \
+    apt-get install -y \
+    tzdata \
+    software-properties-common
 
 # Set up Ubuntu 22 comes with 3.10
-RUN apt install -y software-properties-common; \
-    add-apt-repository ppa:deadsnakes/ppa; \
+RUN add-apt-repository -y ppa:deadsnakes/ppa; \
     apt update; \
     apt install -y \
     python3.9 \
+    python3-pip \
     python3.9-venv; \
-    python 3.9 -m pip install --upgrade pip
+    python3.9 -m pip install --upgrade pip
 
     
 # Prep the default installation just in case it is needed
 RUN apt install -y \
-    python3.10-venv \
-    python3-pip \
+    python3.10-venv; \
+    python3 -m pip install --upgrade pip
     
 
 # Set up C environment 
@@ -55,7 +61,7 @@ RUN apt install -y \
 
 # Add misc utilities
 RUN apt install -y \
-    iproute2 \
+    iproute2
 
 
 # Set up SSH

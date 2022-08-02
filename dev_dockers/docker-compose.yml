@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  python_x86_dev:
+  x86_dev_container:
     platform: linux/amd64
     build:
       context: .
@@ -11,7 +11,7 @@ services:
     cap_add:
       - SYS_PTRACE
 
-    container_name: python_x86_dev
+    container_name: x86_dev_container
     volumes:
       - .:/opt/code
     dns:
