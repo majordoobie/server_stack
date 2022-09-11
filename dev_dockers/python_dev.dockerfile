@@ -48,6 +48,7 @@ RUN apt install -y \
     ssh \
     gcc \
     g++ \
+    git \
     gdb \
     clang \
     make \
